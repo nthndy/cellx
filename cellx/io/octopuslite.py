@@ -42,7 +42,7 @@ def crop_image(image, crop):
     return image[crops]
 
 
-class OctopusLiteReader(object):
+class OctopusLiteReader:
     """ A simple class to load OctopusLite data from a directory.
     Caches data once it is loaded to prevent excesive io to
     the data server.
@@ -61,7 +61,7 @@ class OctopusLiteReader(object):
 
     """
 
-    def __init__(self, path, crop=True):
+    def __init__(self, path: str, crop: bool = True):
         self.path = path
         self._files = {}
         self._data = {}
@@ -85,7 +85,7 @@ class OctopusLiteReader(object):
     def shape(self):
         return self._shape
 
-    def channel_name_from_index(self, channel_index):
+    def channel_name_from_index(self, channel_index: int):
         return Channels(int(channel_index))
 
     def preload(self, channels=None):
