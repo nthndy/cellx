@@ -5,6 +5,8 @@ import re
 import numpy as np
 from skimage import io
 
+FILENAME_PATTERN = "img_channel([0-9]+)_position([0-9]+)_time([0-9]+)_z([0-9]+)"
+
 
 @enum.unique
 class Channels(enum.Enum):
@@ -26,7 +28,7 @@ def crop_image(image, crop):
 
     dims = image.ndim
     shape = image.shape
-    crop = np.array(crop).astype("int")
+    crop = np.array(crop).astype(np.int)
 
     # check that we don't exceed any dimensions
     assert all([crop[i] <= s for i, s in enumerate(shape)])
@@ -105,9 +107,10 @@ class OctopusLiteReader(object):
         """ parse out the files from the folder """
         files = [f for f in os.listdir(self.path) if f.endswith(".tif")]
 
+        # TODO(arl): raise a warning if the folder is empty
+
         def parse_filename(fn):
-            pattern = "img_channel([0-9]+)_position([0-9]+)_time([0-9]+)_z([0-9]+)"
-            params = re.match(pattern, fn)
+            params = re.match(FILENAME_PATTERN, fn)
             return self.channel_name_from_index(params.group(1)), params.group(3)
 
         channels = {k: [] for k in Channels}
@@ -139,9 +142,7 @@ class OctopusLiteReader(object):
         stack = np.zeros((len(self._files[channel_name]),) + im.shape, dtype=im.dtype)
         self._shape = stack.shape
 
-        print(
-            "Loading: {} --> {} ({})...".format(channel_name, stack.shape, stack.dtype)
-        )
+        print(f"Loading: {channel_name} --> {stack.shape} ({stack.dtype})...")
 
         stack[0, ...] = im
         for i in range(1, stack.shape[0]):
@@ -150,5 +151,5 @@ class OctopusLiteReader(object):
         self._data[channel_name] = stack
 
     def clear_cache(self, channel_name):
-        print("Warning! You are clearing the cache for: {}".format(channel_name))
+        print(f"Warning! You are clearing the cache for: {channel_name}")
         self._data[channel_name] = None
